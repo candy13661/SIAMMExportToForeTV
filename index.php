@@ -7,6 +7,19 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = explode('/', $uri);
+
+// all of our endpoints start with /person
+// everything else results in a 404 Not Found
+if ($uri[2] !== 'ExportToForeTV') {
+    header("HTTP/1.1 404 Not Found");
+	echo json_encode(array(
+        "responseMessage" => "Wrong URL"
+    ));
+    exit();
+}
+
 //Exception message
 function exception_handler($exception)
 {
@@ -51,12 +64,13 @@ if (!empty($data->FileContent)) {
     //Save XML content into file form API request
     $xmlString               = $data->FileContent;
     $dom                     = new DOMDocument;
-    $dom->preserveWhiteSpace = FALSE;
+    $dom->preserveWhiteSpace = TRUE;
     $dom->loadXML($xmlString);
     $dom->xmlVersion    = '1.0';
     $dom->encoding      = 'UTF-8';
     $dom->xmlStandalone = FALSE;
     $dom->formatOutput  = TRUE;
+	$dom->recover = true;
     //echo $xmlString;
     
     if ($filenameString == "Planning Schedule") {
